@@ -53,5 +53,5 @@ abstract class BaseLayoutState<
         ),
       )));
   Widget buildContentEmpty(BuildContext context) =>
-      Container(child: const Center(child: Text('Empty...')));
+      Container(child: const Center(child: Text('Seem you have not any task')));
 }
