@@ -6,7 +6,7 @@ import 'package:todo_app/data/repositories/task_repository_i.dart';
 
 class TaskRepository implements ITaskRepository {
   final box = Hive.box(HiveBoxName.tasks);
-  TaskRepository() {}
+  TaskRepository();
   @override
   Future<List<TaskModel>> getAllTask(String listName) async {
     List<TaskModel> result;
@@ -91,5 +91,23 @@ class TaskRepository implements ITaskRepository {
       debugPrint(err.toString());
       return false;
     }
+  }
+
+  @override
+  Future<List<String>> getListTasksName() async {
+    List<String> _result;
+    _result = [];
+    for (final value in box.values) {
+      if (_result.isEmpty == true) {
+        _result.add(value.listName);
+      } else {
+        if (_result.firstWhere((element) => element == value.listName,
+                orElse: () => null) ==
+            null) {
+          _result.add(value.listName);
+        }
+      }
+    }
+    return _result;
   }
 }

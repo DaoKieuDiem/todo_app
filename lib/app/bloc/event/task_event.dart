@@ -25,3 +25,23 @@ class AllTaskDeleteEvent extends BaseEvent {
   final bool done;
   AllTaskDeleteEvent({this.done});
 }
+
+class InitEvent extends BaseEvent {
+  InitEvent();
+}
+
+class CreateListEvent extends BaseEvent {
+  final String listName;
+  CreateListEvent({this.listName});
+}
+
+class RenameListEvent extends BaseEvent {
+  final String prevListName;
+  final String newListName;
+  RenameListEvent({this.prevListName, this.newListName});
+}
+
+class DeleteListEvent extends BaseEvent {
+  final String listName;
+  DeleteListEvent({this.listName});
+}

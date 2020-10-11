@@ -58,4 +58,10 @@ class TaskServices implements ITaskServices {
     final _success = await taskRepository.deleteAllTask(done: done);
     return _success;
   }
+
+  @override
+  Future<List<String>> getListTasksName() async {
+    final _items = await taskRepository.getListTasksName();
+    return (_items.isNotEmpty == true) ? _items : [];
+  }
 }

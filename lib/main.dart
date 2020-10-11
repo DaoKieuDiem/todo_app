@@ -14,6 +14,7 @@ import 'package:todo_app/data/models/task_model.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DatabaseUtils.initDatabase();
+  //await DatabaseUtils.clearDatabase();
   Hive.registerAdapter(TaskModelAdapter());
   await Hive.openBox(HiveBoxName.tasks);
   await Hive.openBox(HiveBoxName.taskList);
@@ -28,7 +29,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState
     extends BaseLayoutState<MyApp, HomeScreenBloc, BaseBlocState> {
   _MyAppState() {
-    bloc = HomeScreenBloc()..taskBloc.fetchData(listName: 'My Task');
+    bloc = HomeScreenBloc()..taskBloc.init();
   }
   @override
   void dispose() {

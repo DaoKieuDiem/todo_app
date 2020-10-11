@@ -26,7 +26,9 @@ class HomeScreenBloc extends BaseBloc<BaseEvent, HomeScreenState> {
       yield* _expandDetailField(event);
     } else if (event is PickDateEvent) {
       yield* _pickDate(event);
-    } else if (event is FabClickedEvent) yield* _reset(event);
+    } else if (event is FabClickedEvent) {
+      yield* _reset(event);
+    }
   }
 
   Stream<HomeScreenState> _getCurrentIndex(TabChangedEvent event) async* {

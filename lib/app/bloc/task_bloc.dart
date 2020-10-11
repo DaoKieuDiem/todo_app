@@ -2,6 +2,7 @@ import 'package:todo_app/app/base/bloc/base_bloc.dart';
 import 'package:todo_app/app/base/bloc/base_event.dart';
 import 'package:todo_app/app/bloc/event/task_event.dart';
 import 'package:todo_app/app/bloc/state/task_state.dart';
+import 'package:todo_app/common/common_constant.dart';
 import 'package:todo_app/domain/entities/task_entity.dart';
 import 'package:todo_app/domain/services/task_services_i.dart';
 import 'package:todo_app/domain/services/task_services_impl.dart';
@@ -13,6 +14,7 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
           state: TaskState(
             completedTasks: const [],
             uncompletedTasks: const [],
+            listTasks: const [],
             isFetchedData: false,
           ),
         );
@@ -30,6 +32,14 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
       yield* _fetchData(event);
     } else if (event is AllTaskDeleteEvent) {
       yield* _deleteAllTask(event);
+    } else if (event is CreateListEvent) {
+      yield* _createListTasks(event);
+    } else if (event is InitEvent) {
+      yield* _init(event);
+    } else if (event is RenameListEvent) {
+      yield* _renameList(event);
+    } else if (event is DeleteListEvent) {
+      yield* _deleteList(event);
     }
   }
 
@@ -110,11 +120,14 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
         await taskServices.getCompletedTask(listName: event.listName);
     final _uncompletedTask =
         await taskServices.getUncompletedTask(listName: event.listName);
+    final _listTask = state?.listTasks;
     yield TaskState(
       state: state,
       completedTasks: _completeTask,
       uncompletedTasks: _uncompletedTask,
-      isFetchedData: true,
+      isFetchedData: false,
+      listTasks: _listTask,
+      currentListTasks: event.listName,
     );
   }
 
@@ -125,6 +138,107 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
       isFetchedData: false,
       completedTasks: (_success == true && event.done == true) ? [] : null,
       uncompletedTasks: (_success == true && event.done == false) ? [] : null,
+    );
+  }
+
+  Stream<TaskState> _createListTasks(CreateListEvent event) async* {
+    List<String> _listTasks;
+    _listTasks = [];
+    _listTasks = state?.listTasks;
+    if (event.listName.isNotEmpty == true) {
+      _listTasks.add(event.listName);
+    }
+    yield TaskState(
+      state: state,
+      isFetchedData: false,
+      completedTasks: const [],
+      uncompletedTasks: const [],
+      currentListTasks:
+          (event.listName.isNotEmpty == true) ? event.listName : null,
+      listTasks: _listTasks,
+    );
+  }
+
+  Stream<TaskState> _init(InitEvent event) async* {
+    List<String> _items;
+    _items = [];
+    List<TaskEntity> _completeTasks;
+    _completeTasks = [];
+    List<TaskEntity> _uncompleteTasks;
+    _uncompleteTasks = [];
+    _items = await taskServices.getListTasksName();
+    if (_items.isEmpty == true) {
+      _items.add(defaultList);
+    }
+    _completeTasks = await taskServices.getCompletedTask(listName: _items[0]);
+    _uncompleteTasks =
+        await taskServices.getUncompletedTask(listName: _items[0]);
+    yield TaskState(
+      state: state,
+      isFetchedData: true,
+      completedTasks: _completeTasks,
+      uncompletedTasks: _uncompleteTasks,
+      currentListTasks: _items[0],
+      listTasks: _items,
+    );
+  }
+
+  Stream<TaskState> _renameList(RenameListEvent event) async* {
+    List<String> _listTasks;
+    _listTasks = state?.listTasks;
+    for (var listName in _listTasks) {
+      if (listName == event.prevListName) {
+        listName = event.newListName;
+      }
+    }
+    final _tasks = await taskServices.getAllTask(event.prevListName);
+    for (final task in _tasks) {
+      task.listName = event.newListName;
+      await taskServices.updateTask(task);
+    }
+    final _completedTasks =
+        await taskServices.getCompletedTask(listName: event.newListName);
+    final _uncompleteTasks =
+        await taskServices.getUncompletedTask(listName: event.newListName);
+    yield TaskState(
+      state: state,
+      isFetchedData: false,
+      completedTasks: _completedTasks,
+      uncompletedTasks: _uncompleteTasks,
+      currentListTasks: event.newListName,
+      listTasks: _listTasks,
+    );
+  }
+
+  Stream<TaskState> _deleteList(DeleteListEvent event) async* {
+    List<String> _listTask;
+    _listTask = [];
+    if (state?.completedTasks?.isEmpty == true &&
+        state?.uncompletedTasks?.isEmpty == true) {
+      _listTask = await taskServices.getListTasksName();
+      final _index =
+          _listTask.indexWhere((element) => element == event.listName);
+      _listTask.removeAt(_index);
+    } else {
+      final _tasks = await taskServices.getAllTask(event.listName);
+      for (final task in _tasks) {
+        await taskServices.deleteTask(task);
+      }
+      _listTask = await taskServices.getListTasksName();
+    }
+    final _completedTasks =
+        await taskServices.getCompletedTask(listName: defaultList);
+    final _uncompleteTasks =
+        await taskServices.getUncompletedTask(listName: defaultList);
+    yield TaskState(
+      state: state,
+      isFetchedData: false,
+      completedTasks:
+          (_completedTasks.isNotEmpty == true) ? _completedTasks : [],
+      uncompletedTasks:
+          (_uncompleteTasks.isNotEmpty == true) ? _uncompleteTasks : [],
+      currentListTasks: defaultList,
+      listTasks: _listTask,
     );
   }
 
@@ -151,5 +265,21 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
 
   void deleteAllTask({bool done}) {
     add(AllTaskDeleteEvent(done: done));
+  }
+
+  void createListTask({String listName}) {
+    add(CreateListEvent(listName: listName));
+  }
+
+  void renameList({String prevListName, String newListName}) {
+    add(RenameListEvent(prevListName: prevListName, newListName: newListName));
+  }
+
+  void deleteList({String listName}) {
+    add(DeleteListEvent(listName: listName));
+  }
+
+  void init() {
+    add(InitEvent());
   }
 }

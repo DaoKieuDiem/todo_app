@@ -20,3 +20,4 @@ class ExpandDetailEvent extends BaseEvent {
 class FabClickedEvent extends BaseEvent {
   FabClickedEvent();
 }
+
