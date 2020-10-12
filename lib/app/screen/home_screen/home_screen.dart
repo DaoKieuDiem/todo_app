@@ -115,7 +115,7 @@ class _HomeScreenState
             controller: _controller,
             tabBar: CupertinoTabBar(
               onTap: (int v) {
-                bloc.getCurrentIndex(currentIndex: _controller.index);
+                bloc?.getCurrentIndex(currentIndex: _controller.index);
               },
               items: [
                 BottomNavigationBarItem(
@@ -192,7 +192,7 @@ class _HomeScreenState
               child: BottomNavigationBar(
                 currentIndex: currentIndex,
                 onTap: (int index) {
-                  bloc.getCurrentIndex(currentIndex: index);
+                  bloc?.getCurrentIndex(currentIndex: index);
                 },
                 type: BottomNavigationBarType.fixed,
                 items: [
@@ -265,7 +265,7 @@ class _HomeScreenState
         right: 30.0,
         child: FloatingActionButton(
           onPressed: () {
-            bloc.reset();
+            bloc?.reset();
             _addNewTaskModalBottomSheet(context);
           },
           child: const Icon(
@@ -340,7 +340,7 @@ class _HomeScreenState
             child: Wrap(
               children: <Widget>[
                 _buildSectionUser(context),
-                if (listTasks.isNotEmpty == true)
+                if (listTasks?.isNotEmpty == true)
                   _buildSectionTaskList(context),
                 _buildBottomSheetItemMenu(Icons.add, 'Create new list'),
               ],
@@ -357,29 +357,31 @@ class _HomeScreenState
           return Container(
             child: Wrap(
               children: <Widget>[
-                InkWell(
-                  onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => RenameListTaskScreen(),
+                if (listName != defaultList)
+                  InkWell(
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RenameListTaskScreen(),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      padding:
+                          const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                      child: Text(
+                        'Rename List',
+                        style: themeData.textTheme.subtitle1,
                       ),
-                    );
-                  },
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                    child: Text(
-                      'Rename List',
-                      style: themeData.textTheme.subtitle1,
                     ),
                   ),
-                ),
                 InkWell(
                   onTap: () {
                     if (listName != defaultList) {
-                      if (completedTasks.isEmpty == true &&
-                          uncompletedTasks.isEmpty == true) {
+                      if (completedTasks?.isEmpty == true &&
+                          uncompletedTasks?.isEmpty == true) {
                         bloc?.taskBloc?.deleteList(listName: listName);
                       }
                       Navigator.pop(context);
@@ -406,8 +408,9 @@ class _HomeScreenState
                             margin: const EdgeInsets.only(top: 5.0),
                             child: Text(
                               'The Default list can not delete',
-                              style: themeData.textTheme.subtitle1.copyWith(
+                              style: themeData.textTheme.subtitle2.copyWith(
                                 color: Colors.black.withOpacity(0.5),
+                                fontWeight: FontWeight.normal,
                               ),
                             ),
                           ),
@@ -417,7 +420,7 @@ class _HomeScreenState
                 ),
                 InkWell(
                   onTap: () {
-                    if (completedTasks.isNotEmpty == true) {
+                    if (completedTasks?.isNotEmpty == true) {
                       bloc?.taskBloc?.deleteAllTask(done: true);
                       Future.delayed(const Duration(milliseconds: 1000))
                           .whenComplete(() => Navigator.pop(context));
@@ -429,7 +432,7 @@ class _HomeScreenState
                     child: Text(
                       'Delete all complete tasks',
                       style: themeData.textTheme.subtitle1.copyWith(
-                        color: (completedTasks.isEmpty == true)
+                        color: (completedTasks?.isEmpty == true)
                             ? Colors.black.withOpacity(0.5)
                             : Colors.black,
                       ),
@@ -539,16 +542,36 @@ class _HomeScreenState
                         onTap: () {
                           _selectDate(context);
                         },
-                        child: Container(
-                          margin: const EdgeInsets.only(left: 20.0),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10.0),
-                              border:
-                                  Border.all(color: themeData.dividerColor)),
-                          padding:
-                              const EdgeInsets.fromLTRB(25.0, 10.0, 20.0, 10.0),
-                          child: Text(
-                            DateFormat.yMMMMd('en_US').format(selectedDate),
+                        child: FittedBox(
+                          child: Container(
+                            margin: const EdgeInsets.only(left: 20.0),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10.0),
+                                border:
+                                    Border.all(color: themeData.dividerColor)),
+                            padding: const EdgeInsets.fromLTRB(
+                                25.0, 10.0, 20.0, 10.0),
+                            child: Row(
+                              children: [
+                                Text(
+                                  DateFormat.yMMMMd('en_US')
+                                      .format(selectedDate),
+                                ),
+                                Container(
+                                  margin: const EdgeInsets.only(left: 5.0),
+                                  child: InkWell(
+                                    onTap: () {
+                                      bloc?.reset();
+                                    },
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 20.0,
+                                      color: Colors.black.withOpacity(0.6),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -591,29 +614,27 @@ class _HomeScreenState
                           ),
                           InkWell(
                             onTap: () {
-                              bloc.taskBloc.addNewTask(
+                              bloc?.taskBloc?.addNewTask(
                                 item: TaskEntity(
-                                  task: _taskTitleController.text.trim(),
-                                  detail: _taskDetailController.text.trim(),
+                                  task: _taskTitleController?.text?.trim(),
+                                  detail: _taskDetailController?.text?.trim(),
                                   date: (selectedDate != null)
-                                      ? DateFormat('yMd').format(selectedDate)
+                                      ? DateFormat('dd-MM-yyyy')
+                                          .format(selectedDate)
                                       : null,
                                   listName: listName,
                                 ),
                               );
-                              _taskTitleController.clear();
-                              _taskDetailController.clear();
-                              Future.delayed(const Duration(milliseconds: 1000))
-                                  .whenComplete(() {
-                                Navigator.pop(context);
-                              });
+                              _taskTitleController?.clear();
+                              _taskDetailController?.clear();
+                              Navigator.pop(context);
                             },
                             child: Text(
                               'Save',
                               style: themeData.textTheme.subtitle1.copyWith(
-                                color: _taskTitleController.value.text
-                                            .trim()
-                                            .isNotEmpty ==
+                                color: _taskTitleController?.value?.text
+                                            ?.trim()
+                                            ?.isNotEmpty ==
                                         true
                                     ? themeData.primaryColor
                                     : Colors.black.withOpacity(0.5),
@@ -631,7 +652,7 @@ class _HomeScreenState
         });
   }
 
-  _selectDate(BuildContext context) async {
+  Future<void> _selectDate(BuildContext context) async {
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,

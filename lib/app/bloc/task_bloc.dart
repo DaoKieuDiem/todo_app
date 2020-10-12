@@ -40,6 +40,8 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
       yield* _renameList(event);
     } else if (event is DeleteListEvent) {
       yield* _deleteList(event);
+    } else if (event is MoveTaskToListEvent) {
+      yield* _moveTaskTo(event);
     }
   }
 
@@ -66,10 +68,10 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
     var _uncompletedTask = [];
     final _success = await taskServices.updateTask(event.item);
     if (_success == true) {
-      _completeTask =
-          await taskServices.getCompletedTask(listName: event.item.listName);
-      _uncompletedTask =
-          await taskServices.getUncompletedTask(listName: event.item.listName);
+      _completeTask = await taskServices.getCompletedTask(
+          listName: state?.currentListTasks);
+      _uncompletedTask = await taskServices.getUncompletedTask(
+          listName: state?.currentListTasks);
     }
     yield TaskState(
       state: state,
@@ -128,6 +130,7 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
       isFetchedData: false,
       listTasks: _listTask,
       currentListTasks: event.listName,
+      listTaskToMove: event.listName,
     );
   }
 
@@ -156,6 +159,8 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
       currentListTasks:
           (event.listName.isNotEmpty == true) ? event.listName : null,
       listTasks: _listTasks,
+      listTaskToMove:
+          (event.listName.isNotEmpty == true) ? event.listName : null,
     );
   }
 
@@ -169,10 +174,16 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
     _items = await taskServices.getListTasksName();
     if (_items.isEmpty == true) {
       _items.add(defaultList);
+    } else {
+      if (_items.firstWhere((element) => element == defaultList,
+              orElse: () => null) ==
+          null) {
+        _items.add(defaultList);
+      }
+      _completeTasks = await taskServices.getCompletedTask(listName: _items[0]);
+      _uncompleteTasks =
+          await taskServices.getUncompletedTask(listName: _items[0]);
     }
-    _completeTasks = await taskServices.getCompletedTask(listName: _items[0]);
-    _uncompleteTasks =
-        await taskServices.getUncompletedTask(listName: _items[0]);
     yield TaskState(
       state: state,
       isFetchedData: true,
@@ -180,6 +191,7 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
       uncompletedTasks: _uncompleteTasks,
       currentListTasks: _items[0],
       listTasks: _items,
+      listTaskToMove: _items[0],
     );
   }
 
@@ -207,6 +219,7 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
       uncompletedTasks: _uncompleteTasks,
       currentListTasks: event.newListName,
       listTasks: _listTasks,
+      listTaskToMove: event.newListName,
     );
   }
 
@@ -239,7 +252,12 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
           (_uncompleteTasks.isNotEmpty == true) ? _uncompleteTasks : [],
       currentListTasks: defaultList,
       listTasks: _listTask,
+      listTaskToMove: defaultList,
     );
+  }
+
+  Stream<TaskState> _moveTaskTo(MoveTaskToListEvent event) async* {
+    yield TaskState(state: state, listTaskToMove: event.listName);
   }
 
   @override
@@ -281,5 +299,9 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
 
   void init() {
     add(InitEvent());
+  }
+
+  void moveTaskTo({String listName}) {
+    add(MoveTaskToListEvent(listName: listName));
   }
 }

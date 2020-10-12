@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
 import 'package:todo_app/app/base/bloc/base_bloc_state.dart';
 import 'package:todo_app/app/base/layout/base_layout.dart';
+import 'package:todo_app/app/base/theme/app_theme.dart';
 import 'package:todo_app/app/bloc/home_screen_bloc.dart';
 import 'package:todo_app/app/screen/splash_scren/splash_screen.dart';
 import 'package:todo_app/common/common_constant.dart';
@@ -14,11 +15,11 @@ import 'package:todo_app/data/models/task_model.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DatabaseUtils.initDatabase();
-  //await DatabaseUtils.clearDatabase();
   Hive.registerAdapter(TaskModelAdapter());
   await Hive.openBox(HiveBoxName.tasks);
   await Hive.openBox(HiveBoxName.taskList);
   runApp(MyApp());
+  //await DatabaseUtils.clearDatabase();
 }
 
 class MyApp extends StatefulWidget {
@@ -49,6 +50,7 @@ class _MyAppState
               home: SplashScreen(),
             )
           : MaterialApp(
+              theme: AppTheme.build(),
               home: SplashScreen(),
             ),
     );

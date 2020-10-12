@@ -48,10 +48,11 @@ class _RenameListTaskScreenState extends BaseLayoutState<RenameListTaskScreen,
               onTap: () {
                 taskBloc?.renameList(
                   prevListName: taskBloc?.state?.currentListTasks,
-                  newListName: _controller.text.trim(),
+                  newListName: _controller?.text?.trim(),
                 );
-                Future.delayed(const Duration(milliseconds: 2000))
-                    .whenComplete(() => Navigator.pop(context));
+                Navigator.pop(context);
+                // Future.delayed(const Duration(milliseconds: 2000))
+                //     .whenComplete(() => Navigator.pop(context));
               },
               child: Text(
                 'Done',
@@ -78,7 +79,7 @@ class _RenameListTaskScreenState extends BaseLayoutState<RenameListTaskScreen,
         ),
       ),
       child: TextField(
-        controller: _controller..text = taskBloc?.state?.currentListTasks,
+        controller: _controller..text = taskBloc?.state?.currentListTasks ?? '',
         decoration: const InputDecoration(
           hintText: 'Enter list title',
           border: InputBorder.none,

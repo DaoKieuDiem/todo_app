@@ -45,3 +45,8 @@ class DeleteListEvent extends BaseEvent {
   final String listName;
   DeleteListEvent({this.listName});
 }
+
+class MoveTaskToListEvent extends BaseEvent {
+  final String listName;
+  MoveTaskToListEvent({this.listName});
+}

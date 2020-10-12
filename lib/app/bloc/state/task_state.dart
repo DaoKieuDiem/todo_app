@@ -7,6 +7,7 @@ class TaskState extends BaseBlocState {
   final bool isFetchedData;
   final String currentListTasks;
   final List<String> listTasks;
+  final String listTaskToMove;
   TaskState({
     TaskState state,
     bool isFetchedData,
@@ -14,10 +15,12 @@ class TaskState extends BaseBlocState {
     List<TaskEntity> uncompletedTasks,
     String currentListTasks,
     List<String> listTasks,
+    String listTaskToMove,
   })  : completedTasks = completedTasks ?? state?.completedTasks,
         uncompletedTasks = uncompletedTasks ?? state?.uncompletedTasks,
         isFetchedData = isFetchedData ?? state?.isFetchedData,
         currentListTasks = currentListTasks ?? state?.currentListTasks,
         listTasks = listTasks ?? state?.listTasks,
+        listTaskToMove = listTaskToMove ?? state?.listTaskToMove,
         super(timeStamp: DateTime.now().millisecondsSinceEpoch);
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -9,6 +10,10 @@ class DatabaseUtils {
 
   /// To remove all local storage content.
   static Future<void> clearDatabase() async {
-    await Hive.deleteFromDisk();
+    try {
+      await Hive.deleteFromDisk();
+    } catch (err) {
+      debugPrint(err.toString());
+    }
   }
 }
