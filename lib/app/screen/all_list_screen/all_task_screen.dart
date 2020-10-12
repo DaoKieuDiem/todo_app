@@ -76,7 +76,7 @@ class _AllTaskScreenState
         ),
         Positioned(
           top: MediaQuery.of(context).size.height * 0.2,
-          bottom: 80.0,
+          //bottom: 10.0,
           left: 100.0,
           right: 100.0,
           child: Padding(

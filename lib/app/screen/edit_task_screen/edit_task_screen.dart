@@ -65,44 +65,49 @@ class _EditTaskScreenState
         ),
       ),
       actions: [
-        (done == false)
-            ? Container(
-                padding: const EdgeInsets.fromLTRB(0.0, 5.0, 20.0, 5.0),
-                child: InkWell(
-                  onTap: () {
-                    bloc?.updateTask(
-                      item: TaskEntity(
-                        id: task.id,
-                        task: _taskNameController?.text?.trim(),
-                        detail: _detailController?.text?.trim(),
-                        date: (selectedDate != null)
-                            ? DateFormat.yMMMMd('en_US').format(selectedDate)
-                            : null,
-                        done: done,
-                        listName: bloc?.state?.listTaskToMove,
+        BlocBuilder(
+            cubit: bloc,
+            builder: (context, TaskState state) {
+              return (done == false)
+                  ? Container(
+                      padding: const EdgeInsets.fromLTRB(0.0, 5.0, 20.0, 5.0),
+                      child: InkWell(
+                        onTap: () {
+                          bloc?.updateTask(
+                            item: TaskEntity(
+                              id: task.id,
+                              task: _taskNameController?.text?.trim(),
+                              detail: _detailController?.text?.trim(),
+                              date: (selectedDate != null)
+                                  ? DateFormat.yMMMMd('en_US')
+                                      .format(selectedDate)
+                                  : null,
+                              done: done,
+                              listName: bloc?.state?.listTaskToMove,
+                            ),
+                          );
+                          Navigator.pop(context);
+                        },
+                        child: const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                        ),
+                      ),
+                    )
+                  : Container(
+                      padding: const EdgeInsets.fromLTRB(0.0, 5.0, 20.0, 5.0),
+                      child: InkWell(
+                        onTap: () {
+                          final _item = task..done = !task.done;
+                          bloc?.updateTask(item: _item);
+                        },
+                        child: const Icon(
+                          Icons.undo_outlined,
+                          color: Colors.white,
+                        ),
                       ),
                     );
-                    Navigator.pop(context);
-                  },
-                  child: const Icon(
-                    Icons.check,
-                    color: Colors.white,
-                  ),
-                ),
-              )
-            : Container(
-                padding: const EdgeInsets.fromLTRB(0.0, 5.0, 20.0, 5.0),
-                child: InkWell(
-                  onTap: () {
-                    final _item = task..done = !task.done;
-                    bloc?.updateTask(item: _item);
-                  },
-                  child: const Icon(
-                    Icons.undo_outlined,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+            }),
         Container(
           padding: const EdgeInsets.fromLTRB(0.0, 5.0, 20.0, 5.0),
           child: InkWell(
@@ -123,12 +128,17 @@ class _EditTaskScreenState
   @override
   Widget buildContent(BuildContext context) {
     return Container(
+      padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
       width: MediaQuery.of(context).size.width,
       child: ListView(
         shrinkWrap: true,
         children: [
           InkWell(
-            onTap: () => _changeListBottomSheet(context),
+            onTap: () {
+              if (done == false) {
+                _changeListBottomSheet(context);
+              }
+            },
             child: Container(
               padding: const EdgeInsets.fromLTRB(15.0, 20.0, 20.0, 10.0),
               child: Row(
@@ -139,14 +149,19 @@ class _EditTaskScreenState
                     (state?.listTaskToMove?.isNotEmpty == true)
                         ? state?.listTaskToMove
                         : task?.listName,
-                    style: themeData.textTheme.bodyText2
-                        .copyWith(color: themeData.primaryColor),
+                    style: themeData.textTheme.bodyText2.copyWith(
+                      color: (done == false)
+                          ? themeData.primaryColor
+                          : themeData.disabledColor,
+                    ),
                   ),
                   Container(
                     margin: const EdgeInsets.only(left: 20.0),
                     child: Icon(
                       Icons.arrow_drop_down,
-                      color: themeData.primaryColor,
+                      color: (done == false)
+                          ? themeData.primaryColor
+                          : themeData.disabledColor,
                     ),
                   ),
                 ],
@@ -176,9 +191,14 @@ class _EditTaskScreenState
               ),
             ),
             enabled: !done,
+            maxLines: 2,
           ),
           TextField(
             controller: _detailController..text = task?.detail ?? '',
+            style: themeData.textTheme.subtitle1.copyWith(
+              color:
+                  (done == true) ? Colors.black.withOpacity(0.5) : Colors.black,
+            ),
             decoration: InputDecoration(
               prefixIcon: Container(
                 padding: const EdgeInsets.only(
@@ -206,6 +226,7 @@ class _EditTaskScreenState
               ),
             ),
             enabled: !done,
+            maxLines: 2,
           ),
           Container(
             margin: const EdgeInsets.only(top: 10.0),
@@ -228,19 +249,21 @@ class _EditTaskScreenState
                       _selectDate(context);
                     }
                   },
-                  child: (task?.date == null || task?.date?.isEmpty == true)
-                      ? Container(
-                          child: Text(
-                            'Add date',
-                            style: themeData.textTheme.subtitle2.copyWith(
-                              color: Colors.black.withOpacity(0.5),
-                            ),
-                          ),
-                        )
-                      : BlocBuilder(
-                          cubit: homeBloc,
-                          builder: (context, HomeScreenState state) {
-                            return Container(
+                  child: BlocBuilder(
+                    cubit: homeBloc,
+                    builder: (context, HomeScreenState state) {
+                      return ((task?.date == null ||
+                                  task?.date?.isEmpty == true) &&
+                              selectedDate == null)
+                          ? Container(
+                              child: Text(
+                                'Add date',
+                                style: themeData.textTheme.subtitle2.copyWith(
+                                  color: Colors.black.withOpacity(0.5),
+                                ),
+                              ),
+                            )
+                          : Container(
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(10.0),
                                   border: Border.all(
@@ -278,8 +301,8 @@ class _EditTaskScreenState
                                 ],
                               ),
                             );
-                          },
-                        ),
+                    },
+                  ),
                 )
               ],
             ),

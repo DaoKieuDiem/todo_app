@@ -198,10 +198,10 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
   Stream<TaskState> _renameList(RenameListEvent event) async* {
     List<String> _listTasks;
     _listTasks = state?.listTasks;
-    for (var listName in _listTasks) {
-      if (listName == event.prevListName) {
-        listName = event.newListName;
-      }
+    final _index =
+        _listTasks?.indexWhere((element) => element == event.prevListName);
+    if (_index != -1) {
+      _listTasks.replaceRange(_index, _index + 1, [event.newListName]);
     }
     final _tasks = await taskServices.getAllTask(event.prevListName);
     for (final task in _tasks) {

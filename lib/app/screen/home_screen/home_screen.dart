@@ -264,6 +264,7 @@ class _HomeScreenState
         bottom: 30.0,
         right: 30.0,
         child: FloatingActionButton(
+          backgroundColor: themeData.primaryColor,
           onPressed: () {
             bloc?.reset();
             _addNewTaskModalBottomSheet(context);
@@ -336,16 +337,20 @@ class _HomeScreenState
         isScrollControlled: true,
         context: context,
         builder: (BuildContext bc) {
-          return Container(
-            child: Wrap(
-              children: <Widget>[
-                _buildSectionUser(context),
-                if (listTasks?.isNotEmpty == true)
-                  _buildSectionTaskList(context),
-                _buildBottomSheetItemMenu(Icons.add, 'Create new list'),
-              ],
-            ),
-          );
+          return BlocBuilder(
+              cubit: bloc?.taskBloc,
+              builder: (context, TaskState state) {
+                return Container(
+                  child: Wrap(
+                    children: <Widget>[
+                      _buildSectionUser(context),
+                      if (listTasks?.isNotEmpty == true)
+                        _buildSectionTaskList(context),
+                      _buildBottomSheetItemMenu(Icons.add, 'Create new list'),
+                    ],
+                  ),
+                );
+              });
         });
   }
 
