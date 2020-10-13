@@ -42,6 +42,8 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
       yield* _deleteList(event);
     } else if (event is MoveTaskToListEvent) {
       yield* _moveTaskTo(event);
+    } else if (event is ResetEvent) {
+      yield* _reset(event);
     }
   }
 
@@ -54,8 +56,9 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
     }
     event.item.done = false;
     await taskServices.addTask(event.item);
-    final items =
-        await taskServices.getUncompletedTask(listName: event.item.listName);
+    final items = await taskServices.getUncompletedTask(
+      listName: event.item.listName,
+    );
     yield TaskState(
       state: state,
       uncompletedTasks: items,
@@ -69,7 +72,8 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
     final _success = await taskServices.updateTask(event.item);
     if (_success == true) {
       _completeTask = await taskServices.getCompletedTask(
-          listName: state?.currentListTasks);
+        listName: state?.currentListTasks,
+      );
       _uncompletedTask = await taskServices.getUncompletedTask(
           listName: state?.currentListTasks);
     }
@@ -84,18 +88,21 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
   Stream<TaskState> _deleteTask(DeleteTaskEvent event) async* {
     var _completeTask = [];
     var _uncompletedTask = [];
+    var _message = '';
     final _success = await taskServices.deleteTask(event.item);
     if (_success == true) {
       _completeTask =
           await taskServices.getCompletedTask(listName: event.item.listName);
       _uncompletedTask =
           await taskServices.getUncompletedTask(listName: event.item.listName);
+      _message = '1 task has been deleted';
     }
     yield TaskState(
       state: state,
       completedTasks: (_success == true) ? _completeTask : null,
       uncompletedTasks: (_success == true) ? _uncompletedTask : null,
       isFetchedData: false,
+      changeCheckMessage: _message,
     );
   }
 
@@ -103,17 +110,24 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
     event.item.done = !event.item.done;
     var _completeTask = [];
     var _uncompletedTask = [];
+    var _message = '';
     final _success = await taskServices.updateTask(event.item);
     if (_success == true) {
       _completeTask =
           await taskServices.getCompletedTask(listName: event.item.listName);
       _uncompletedTask =
           await taskServices.getUncompletedTask(listName: event.item.listName);
+      if (event.item.done == true) {
+        _message = '1 completed';
+      } else {
+        _message = '1 item mark uncompleted';
+      }
     }
     yield TaskState(
       state: state,
       completedTasks: (_success == true) ? _completeTask : null,
       uncompletedTasks: (_success == true) ? _uncompletedTask : null,
+      changeCheckMessage: _message,
     );
   }
 
@@ -198,10 +212,15 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
   Stream<TaskState> _renameList(RenameListEvent event) async* {
     List<String> _listTasks;
     _listTasks = state?.listTasks;
-    final _index =
-        _listTasks?.indexWhere((element) => element == event.prevListName);
+    final _index = _listTasks?.indexWhere(
+      (element) => element == event.prevListName,
+    );
     if (_index != -1) {
-      _listTasks.replaceRange(_index, _index + 1, [event.newListName]);
+      _listTasks.replaceRange(
+        _index,
+        _index + 1,
+        [event.newListName],
+      );
     }
     final _tasks = await taskServices.getAllTask(event.prevListName);
     for (final task in _tasks) {
@@ -229,8 +248,9 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
     _listTask = state?.listTasks;
     if (state?.completedTasks?.isEmpty == true &&
         state?.uncompletedTasks?.isEmpty == true) {
-      final _index =
-          _listTask.indexWhere((element) => element == event.listName);
+      final _index = _listTask.indexWhere(
+        (element) => element == event.listName,
+      );
       if (_index != -1) {
         _listTask.removeAt(_index);
       }
@@ -260,6 +280,10 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
 
   Stream<TaskState> _moveTaskTo(MoveTaskToListEvent event) async* {
     yield TaskState(state: state, listTaskToMove: event.listName);
+  }
+
+  Stream<TaskState> _reset(ResetEvent event) async* {
+    yield TaskState(state: state, changeCheckMessage: '');
   }
 
   @override
@@ -292,7 +316,10 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
   }
 
   void renameList({String prevListName, String newListName}) {
-    add(RenameListEvent(prevListName: prevListName, newListName: newListName));
+    add(RenameListEvent(
+      prevListName: prevListName,
+      newListName: newListName,
+    ));
   }
 
   void deleteList({String listName}) {
@@ -305,5 +332,9 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
 
   void moveTaskTo({String listName}) {
     add(MoveTaskToListEvent(listName: listName));
+  }
+
+  void reset() {
+    add(ResetEvent());
   }
 }

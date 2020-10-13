@@ -73,17 +73,30 @@ class _HomeScreenState
   @override
   Widget buildAppBar(BuildContext context) {
     return AppBar(
-        title: BlocBuilder(
-      cubit: bloc?.taskBloc,
-      builder: (context, TaskState state) {
-        return Center(
-          child: Text(
-            listName,
-            style: themeData.textTheme.headline5.copyWith(color: Colors.white),
-          ),
-        );
-      },
-    ));
+      backgroundColor: Colors.white,
+      elevation: 0.0,
+      title: BlocBuilder(
+        cubit: bloc?.taskBloc,
+        builder: (context, TaskState state) {
+          return Container(
+            padding: const EdgeInsets.all(20.0),
+            child: Text(
+              listName,
+              style:
+                  themeData.textTheme.headline5.copyWith(color: Colors.black),
+              overflow: TextOverflow.ellipsis,
+            ),
+          );
+        },
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1.0),
+        child: Container(
+          color: themeData.dividerColor,
+          height: 1,
+        ),
+      ),
+    );
   }
 
   @override
@@ -143,7 +156,7 @@ class _HomeScreenState
                 _buildBottomMenu(
                   context,
                   MyBottomMenuItem(
-                    iconData: Icons.check,
+                    iconData: Icons.event_available_outlined,
                     title: BottomNavigationBarTitle.completedTask,
                     isActive: currentIndex == 2,
                   ),
@@ -151,7 +164,7 @@ class _HomeScreenState
                 _buildBottomMenu(
                   context,
                   MyBottomMenuItem(
-                    iconData: Icons.check_box_outline_blank_outlined,
+                    iconData: Icons.event_note_outlined,
                     title: BottomNavigationBarTitle.uncompletedTask,
                     isActive: currentIndex == 3,
                   ),
@@ -224,7 +237,7 @@ class _HomeScreenState
                   _buildBottomMenu(
                     context,
                     MyBottomMenuItem(
-                      iconData: Icons.check,
+                      iconData: Icons.event_available_outlined,
                       title: BottomNavigationBarTitle.completedTask,
                       isActive: currentIndex == 2,
                     ),
@@ -232,7 +245,7 @@ class _HomeScreenState
                   _buildBottomMenu(
                     context,
                     MyBottomMenuItem(
-                      iconData: Icons.check_box_outline_blank_outlined,
+                      iconData: Icons.event_note_outlined,
                       title: BottomNavigationBarTitle.uncompletedTask,
                       isActive: currentIndex == 3,
                     ),
@@ -373,9 +386,10 @@ class _HomeScreenState
                       );
                     },
                     child: Container(
+                      margin: const EdgeInsets.only(top: 5.0),
                       width: MediaQuery.of(context).size.width,
                       padding:
-                          const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                          const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 10.0),
                       child: Text(
                         'Rename List',
                         style: themeData.textTheme.subtitle1,
@@ -396,7 +410,8 @@ class _HomeScreenState
                   },
                   child: Container(
                     width: MediaQuery.of(context).size.width,
-                    padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                    padding: EdgeInsets.fromLTRB(20.0,
+                        (listName != defaultList) ? 10.0 : 20.0, 20.0, 10.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -411,7 +426,7 @@ class _HomeScreenState
                         ),
                         if (listName == defaultList)
                           Container(
-                            margin: const EdgeInsets.only(top: 5.0),
+                            margin: const EdgeInsets.only(top: 10.0),
                             child: Text(
                               'The Default list can not delete',
                               style: themeData.textTheme.subtitle2.copyWith(
@@ -426,11 +441,8 @@ class _HomeScreenState
                 ),
                 InkWell(
                   onTap: () {
-                    if (completedTasks?.isNotEmpty == true) {
-                      bloc?.taskBloc?.deleteAllTask(done: true);
-                      Future.delayed(const Duration(milliseconds: 1000))
-                          .whenComplete(() => Navigator.pop(context));
-                    }
+                    Navigator.pop(context);
+                    _showDeleteCompleteAlert();
                   },
                   child: Container(
                     width: MediaQuery.of(context).size.width,
@@ -633,6 +645,7 @@ class _HomeScreenState
                               );
                               _taskTitleController?.clear();
                               _taskDetailController?.clear();
+                              bloc?.reset();
                               Navigator.pop(context);
                             },
                             child: Text(
@@ -780,6 +793,51 @@ class _HomeScreenState
               FlatButton(
                 onPressed: () {
                   bloc?.taskBloc?.deleteList(listName: listName);
+                  Navigator.pop(context);
+                },
+                child: Text(
+                  AlertContentString.delete,
+                  style: TextStyle(
+                    color: themeData.primaryColor,
+                  ),
+                ),
+              ),
+            ],
+          );
+        });
+  }
+
+  void _showDeleteCompleteAlert() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(10.0),
+              ),
+            ),
+            title: const Text(
+              AlertContentString.alertTitle,
+            ),
+            content: const Text(
+              '${AlertContentString.deleteTasksContent} ',
+            ),
+            actions: <Widget>[
+              FlatButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  AlertContentString.cancel,
+                  style: TextStyle(
+                    color: themeData.primaryColor,
+                  ),
+                ),
+              ),
+              FlatButton(
+                onPressed: () {
+                  if (completedTasks?.isNotEmpty == true) {
+                    bloc?.taskBloc?.deleteAllTask(done: true);
+                  }
                   Navigator.pop(context);
                 },
                 child: Text(

@@ -50,3 +50,7 @@ class MoveTaskToListEvent extends BaseEvent {
   final String listName;
   MoveTaskToListEvent({this.listName});
 }
+
+class ResetEvent extends BaseEvent {
+  ResetEvent();
+}

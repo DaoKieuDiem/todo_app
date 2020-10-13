@@ -13,6 +13,8 @@ class AlertContentString {
   static const String deleteListContent = 'Delete this list will also delete';
   static const String cancel = 'Cancel';
   static const String delete = 'Delete';
+  static const String deleteTasksContent =
+      'Do you really want to delete all complete tasks';
 }
 
 class HiveBoxName {

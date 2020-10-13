@@ -7,10 +7,11 @@ import 'package:todo_app/app/bloc/task_bloc.dart';
 class HomeScreenBloc extends BaseBloc<BaseEvent, HomeScreenState> {
   HomeScreenBloc()
       : super(
-            state: HomeScreenState(
-          currentIndex: 1,
-          expandDetailField: false,
-        ));
+          state: HomeScreenState(
+            currentIndex: 1,
+            expandDetailField: false,
+          ),
+        );
   TaskBloc taskBloc = TaskBloc();
   @override
   Future<void> close() {

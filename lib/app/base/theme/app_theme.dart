@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const Color primaryColor = Color(0xffd6769b);
+  //d6769b
+  static const Color primaryColor = Color(0xff3a5ad3);
   AppTheme();
 
   static ThemeData build() {
@@ -9,7 +10,6 @@ class AppTheme {
       primaryColor: primaryColor,
       accentColor: primaryColor,
       fontFamily: 'GoogleSans',
-      unselectedWidgetColor: Colors.white,
       colorScheme: const ColorScheme.light().copyWith(
         primary: primaryColor,
       ),

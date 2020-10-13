@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:todo_app/app/base/layout/base_layout.dart';
 import 'package:todo_app/app/bloc/home_screen_bloc.dart';
+import 'package:todo_app/app/bloc/state/home_screen_state.dart';
 import 'package:todo_app/app/bloc/state/task_state.dart';
 import 'package:todo_app/app/bloc/task_bloc.dart';
 import 'package:todo_app/app/screen/edit_task_screen/edit_task_screen.dart';
@@ -29,36 +31,78 @@ class _AllTaskScreenState
   Widget buildContent(BuildContext context) {
     return (completedTasks?.isNotEmpty == true ||
             uncompletedTasks?.isNotEmpty == true)
-        ? ListView(
-            children: [
-              if (uncompletedTasks?.isNotEmpty == true)
-                ...uncompletedTasks.map(_buildUncompleteTasks).toList(),
-              if (completedTasks?.isNotEmpty == true)
-                Theme(
-                  data: themeData.copyWith(dividerColor: Colors.transparent),
-                  child: ExpansionTile(
-                    tilePadding:
-                        const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 20.0),
-                    title: Text(
-                      'Completed(${completedTasks?.length ?? ''})',
-                      style: themeData.textTheme.headline6.copyWith(
-                        fontWeight: FontWeight.w400,
+        ? BlocListener(
+            cubit: bloc,
+            listener: (context, TaskState state) {
+              if (state?.changeCheckMessage?.isNotEmpty == true) {
+                Scaffold.of(context, nullOk: true)?.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      state?.changeCheckMessage,
+                      style: themeData.textTheme.subtitle1.copyWith(
+                        color: Colors.white,
                       ),
                     ),
-                    children: [
-                      ...completedTasks
+                    duration: const Duration(milliseconds: 2000),
+                  ),
+                );
+                bloc?.reset();
+              }
+            },
+            child: Stack(
+              children: [
+                Container(
+                  width: double.infinity,
+                  child: const Image(
+                    image: AssetImage(ImageAssetUrl.backgroundImage),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                ListView(
+                  children: [
+                    if (uncompletedTasks?.isNotEmpty == true)
+                      ...uncompletedTasks
                           .map(
                             (e) => Container(
                               padding: const EdgeInsets.fromLTRB(
-                                  20.0, 10.0, 20.0, 8.0),
+                                  20.0, 20.0, 20.0, 8.0),
                               child: _buildTaskItem(e),
                             ),
                           )
-                          .toList()
-                    ],
-                  ),
-                )
-            ],
+                          .toList(),
+                    if (uncompletedTasks?.isNotEmpty == true)
+                      const SizedBox(height: 10.0),
+                    if (completedTasks?.isNotEmpty == true)
+                      Theme(
+                        data: themeData.copyWith(
+                          dividerColor: Colors.transparent,
+                        ),
+                        child: ExpansionTile(
+                          tilePadding:
+                              const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 20.0),
+                          title: Text(
+                            'Completed(${completedTasks?.length ?? ''})',
+                            style: themeData.textTheme.subtitle1.copyWith(
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                          children: [
+                            ...completedTasks
+                                .map(
+                                  (e) => Container(
+                                    padding: const EdgeInsets.fromLTRB(
+                                        20.0, 10.0, 20.0, 8.0),
+                                    child: _buildTaskItem(e),
+                                  ),
+                                )
+                                .toList()
+                          ],
+                        ),
+                      )
+                  ],
+                ),
+              ],
+            ),
           )
         : buildContentEmpty(context);
   }
@@ -107,27 +151,6 @@ class _AllTaskScreenState
     );
   }
 
-  Widget _buildUncompleteTasks(TaskEntity item) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 8.0),
-      child: Column(
-        key: UniqueKey(),
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            (item.date?.isNotEmpty == true) ? item?.date : 'No due date',
-            style: themeData.textTheme.headline6.copyWith(
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-          const SizedBox(height: 8.0),
-          _buildTaskItem(item)
-        ],
-      ),
-    );
-  }
-
   Widget _buildTaskItem(TaskEntity item) {
     final _check = completedTasks?.firstWhere(
           (element) => element == item,
@@ -153,12 +176,17 @@ class _AllTaskScreenState
               Container(
                 padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
                 margin: const EdgeInsets.only(right: 10.0),
-                color: (_check == true) ? themeData.primaryColor : Colors.red,
-                child: Checkbox(
-                  value: _check,
-                  onChanged: (value) {
-                    bloc?.checkDone(item: item);
-                  },
+                child: Theme(
+                  data: themeData.copyWith(
+                    toggleableActiveColor: Colors.white,
+                  ),
+                  child: Checkbox(
+                    checkColor: themeData.primaryColor,
+                    value: _check,
+                    onChanged: (value) {
+                      bloc?.checkDone(item: item);
+                    },
+                  ),
                 ),
               ),
               Expanded(
@@ -181,9 +209,10 @@ class _AllTaskScreenState
                         Text(
                           item?.task,
                           style: themeData.textTheme.subtitle1.copyWith(
-                              decoration: (_check == true)
-                                  ? TextDecoration.lineThrough
-                                  : TextDecoration.none),
+                            decoration: (_check == true)
+                                ? TextDecoration.lineThrough
+                                : TextDecoration.none,
+                          ),
                           maxLines: 2,
                           overflow: TextOverflow.clip,
                         ),
@@ -196,6 +225,37 @@ class _AllTaskScreenState
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
+                        if (_check == false &&
+                            item?.date != null &&
+                            item?.date != '')
+                          BlocBuilder(
+                            cubit: BlocProvider.of<HomeScreenBloc>(context),
+                            builder: (context, HomeScreenState state) {
+                              return InkWell(
+                                onTap: () {
+                                  _selectDate(context, item: item);
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.only(top: 8.0),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(30.0),
+                                    border: Border.all(
+                                      color: themeData.dividerColor,
+                                    ),
+                                  ),
+                                  padding: const EdgeInsets.fromLTRB(
+                                      10.0, 5.0, 10.0, 5.0),
+                                  child: Text(
+                                    item?.date ?? '',
+                                    style:
+                                        themeData.textTheme.bodyText2.copyWith(
+                                      color: Colors.black.withOpacity(0.5),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                       ],
                     ),
                   ),
@@ -206,5 +266,19 @@ class _AllTaskScreenState
         ),
       ),
     );
+  }
+
+  Future<void> _selectDate(BuildContext context, {TaskEntity item}) async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: now,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2025),
+    );
+    if (picked != null) {
+      item.date = DateFormat.yMMMMd('en_US').format(picked);
+      bloc?.updateTask(item: item);
+    }
   }
 }

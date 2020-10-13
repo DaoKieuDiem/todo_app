@@ -57,73 +57,74 @@ class _EditTaskScreenState
   @override
   Widget buildAppBar(BuildContext context) {
     return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0.0,
       leading: InkWell(
         onTap: () => Navigator.pop(context),
         child: const Icon(
           Icons.arrow_back_outlined,
-          color: Colors.white,
+          color: Colors.black,
         ),
       ),
       title: Center(
         child: Text(
           'Edit task',
-          style: themeData.textTheme.headline5.copyWith(color: Colors.white),
+          style: themeData.textTheme.headline5,
         ),
       ),
       actions: [
         BlocBuilder(
-            cubit: bloc,
-            builder: (context, TaskState state) {
-              return (done == false)
-                  ? Container(
-                      padding: const EdgeInsets.fromLTRB(0.0, 5.0, 20.0, 5.0),
-                      child: InkWell(
-                        onTap: () {
-                          bloc?.updateTask(
-                            item: TaskEntity(
-                              id: task.id,
-                              task: (_taskNameController?.text
-                                          ?.trim()
-                                          ?.isNotEmpty ==
-                                      true)
-                                  ? _taskNameController?.text?.trim()
-                                  : task?.task,
-                              detail: (_detailController?.text
-                                          ?.trim()
-                                          ?.isNotEmpty ==
-                                      true)
-                                  ? _detailController?.text?.trim()
-                                  : task?.detail,
-                              date: (selectedDate != null)
-                                  ? DateFormat('dd-MM-yyyy')
-                                      .format(selectedDate)
-                                  : task?.date,
-                              done: done,
-                              listName: bloc?.state?.listTaskToMove,
-                            ),
-                          );
-                          Navigator.pop(context);
-                        },
-                        child: const Icon(
-                          Icons.check,
-                          color: Colors.white,
-                        ),
+          cubit: bloc,
+          builder: (context, TaskState state) {
+            return (done == false)
+                ? Container(
+                    padding: const EdgeInsets.fromLTRB(0.0, 5.0, 20.0, 5.0),
+                    child: InkWell(
+                      onTap: () {
+                        bloc?.updateTask(
+                          item: TaskEntity(
+                            id: task.id,
+                            task: (_taskNameController?.text
+                                        ?.trim()
+                                        ?.isNotEmpty ==
+                                    true)
+                                ? _taskNameController?.text?.trim()
+                                : task?.task,
+                            detail:
+                                (_detailController?.text?.trim()?.isNotEmpty ==
+                                        true)
+                                    ? _detailController?.text?.trim()
+                                    : task?.detail,
+                            date: (selectedDate != null)
+                                ? DateFormat('dd-MM-yyyy').format(selectedDate)
+                                : task?.date,
+                            done: done,
+                            listName: bloc?.state?.listTaskToMove,
+                          ),
+                        );
+                        Navigator.pop(context);
+                      },
+                      child: const Icon(
+                        Icons.check,
+                        color: Colors.black,
                       ),
-                    )
-                  : Container(
-                      padding: const EdgeInsets.fromLTRB(0.0, 5.0, 20.0, 5.0),
-                      child: InkWell(
-                        onTap: () {
-                          final _item = task..done = !task.done;
-                          bloc?.updateTask(item: _item);
-                        },
-                        child: const Icon(
-                          Icons.undo_outlined,
-                          color: Colors.white,
-                        ),
+                    ),
+                  )
+                : Container(
+                    padding: const EdgeInsets.fromLTRB(0.0, 5.0, 20.0, 5.0),
+                    child: InkWell(
+                      onTap: () {
+                        final _item = task..done = !task.done;
+                        bloc?.updateTask(item: _item);
+                      },
+                      child: const Icon(
+                        Icons.undo_outlined,
+                        color: Colors.black,
                       ),
-                    );
-            }),
+                    ),
+                  );
+          },
+        ),
         Container(
           padding: const EdgeInsets.fromLTRB(0.0, 5.0, 20.0, 5.0),
           child: InkWell(
@@ -133,11 +134,18 @@ class _EditTaskScreenState
             },
             child: const Icon(
               Icons.delete_forever_rounded,
-              color: Colors.white,
+              color: Colors.black,
             ),
           ),
         ),
       ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1.0),
+        child: Container(
+          color: themeData.dividerColor,
+          height: 1,
+        ),
+      ),
     );
   }
 
@@ -281,9 +289,10 @@ class _EditTaskScreenState
                             )
                           : Container(
                               decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                  border: Border.all(
-                                      color: themeData.dividerColor)),
+                                borderRadius: BorderRadius.circular(30.0),
+                                border:
+                                    Border.all(color: themeData.dividerColor),
+                              ),
                               padding: const EdgeInsets.fromLTRB(
                                   25.0, 10.0, 20.0, 10.0),
                               child: Row(

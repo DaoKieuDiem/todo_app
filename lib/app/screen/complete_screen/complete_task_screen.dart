@@ -4,6 +4,7 @@ import 'package:todo_app/app/base/bloc/base_bloc.dart';
 import 'package:todo_app/app/base/bloc/base_bloc_state.dart';
 import 'package:todo_app/app/base/layout/base_layout.dart';
 import 'package:todo_app/app/bloc/home_screen_bloc.dart';
+import 'package:todo_app/app/bloc/state/task_state.dart';
 import 'package:todo_app/app/bloc/task_bloc.dart';
 import 'package:todo_app/app/screen/edit_task_screen/edit_task_screen.dart';
 import 'package:todo_app/common/common_constant.dart';
@@ -26,17 +27,48 @@ class _CompletedTaskScreenState
   @override
   Widget buildContent(BuildContext context) {
     return tasks?.isNotEmpty == true
-        ? ListView(
-            children: [
-              ...tasks
-                  .map(
-                    (e) => Container(
-                      margin: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
-                      child: _buildItem(context, e),
+        ? BlocListener(
+            cubit: bloc,
+            listener: (context, TaskState state) {
+              if (state?.changeCheckMessage?.isNotEmpty == true) {
+                Scaffold.of(context, nullOk: true)?.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      state?.changeCheckMessage,
+                      style: themeData.textTheme.subtitle1.copyWith(
+                        color: Colors.white,
+                      ),
                     ),
-                  )
-                  .toList(),
-            ],
+                    duration: const Duration(milliseconds: 2000),
+                  ),
+                );
+                bloc?.reset();
+              }
+            },
+            child: Stack(
+              children: [
+                Container(
+                  width: double.infinity,
+                  child: const Image(
+                    image: AssetImage(ImageAssetUrl.backgroundImage),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                ListView(
+                  children: [
+                    ...tasks
+                        .map(
+                          (e) => Container(
+                            margin: const EdgeInsets.fromLTRB(
+                                20.0, 20.0, 20.0, 0.0),
+                            child: _buildItem(context, e),
+                          ),
+                        )
+                        .toList(),
+                  ],
+                )
+              ],
+            ),
           )
         : buildContentEmpty(context);
   }
@@ -108,12 +140,17 @@ class _CompletedTaskScreenState
                 Container(
                   padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
                   margin: const EdgeInsets.only(right: 10.0),
-                  color: themeData.primaryColor,
-                  child: Checkbox(
-                    value: _check,
-                    onChanged: (value) {
-                      bloc?.checkDone(item: item);
-                    },
+                  child: Theme(
+                    data: themeData.copyWith(
+                      toggleableActiveColor: Colors.white,
+                    ),
+                    child: Checkbox(
+                      checkColor: themeData.primaryColor,
+                      value: _check,
+                      onChanged: (value) {
+                        bloc?.checkDone(item: item);
+                      },
+                    ),
                   ),
                 ),
                 Expanded(
