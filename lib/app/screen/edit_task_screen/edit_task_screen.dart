@@ -40,6 +40,12 @@ class _EditTaskScreenState
           (element) => element?.id == task?.id,
           orElse: () => null) !=
       null;
+  @override
+  void initState() {
+    _taskNameController.text = task?.task ?? '';
+    _detailController.text = task?.detail ?? '';
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -179,7 +185,7 @@ class _EditTaskScreenState
             ),
           ),
           TextField(
-            controller: _taskNameController..text = task?.task ?? '',
+            controller: _taskNameController,
             style: themeData.textTheme.headline6.copyWith(
               decoration: (done == true)
                   ? TextDecoration.lineThrough
@@ -204,7 +210,7 @@ class _EditTaskScreenState
             maxLines: 2,
           ),
           TextField(
-            controller: _detailController..text = task?.detail ?? '',
+            controller: _detailController,
             style: themeData.textTheme.subtitle1.copyWith(
               color:
                   (done == true) ? Colors.black.withOpacity(0.5) : Colors.black,
@@ -212,8 +218,8 @@ class _EditTaskScreenState
             decoration: InputDecoration(
               prefixIcon: Container(
                 padding: const EdgeInsets.only(
-                  top: 5.0,
-                  bottom: 5.0,
+                  top: 0.0,
+                  bottom: 10.0,
                 ),
                 child: Icon(
                   Icons.notes_outlined,
@@ -231,7 +237,7 @@ class _EditTaskScreenState
               contentPadding: const EdgeInsets.only(
                 left: 15.0,
                 bottom: 5.0,
-                top: 10.0,
+                top: 13.0,
                 right: 15.0,
               ),
             ),
