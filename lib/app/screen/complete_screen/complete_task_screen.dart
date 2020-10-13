@@ -29,9 +29,12 @@ class _CompletedTaskScreenState
         ? ListView(
             children: [
               ...tasks
-                  .map((e) => Container(
-                      margin: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 5.0),
-                      child: _buildItem(context, e)))
+                  .map(
+                    (e) => Container(
+                      margin: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
+                      child: _buildItem(context, e),
+                    ),
+                  )
                   .toList(),
             ],
           )

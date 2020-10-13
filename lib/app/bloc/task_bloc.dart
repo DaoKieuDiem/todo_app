@@ -226,12 +226,14 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
   Stream<TaskState> _deleteList(DeleteListEvent event) async* {
     List<String> _listTask;
     _listTask = [];
+    _listTask = state?.listTasks;
     if (state?.completedTasks?.isEmpty == true &&
         state?.uncompletedTasks?.isEmpty == true) {
-      _listTask = await taskServices.getListTasksName();
       final _index =
           _listTask.indexWhere((element) => element == event.listName);
-      _listTask.removeAt(_index);
+      if (_index != -1) {
+        _listTask.removeAt(_index);
+      }
     } else {
       final _tasks = await taskServices.getAllTask(event.listName);
       for (final task in _tasks) {

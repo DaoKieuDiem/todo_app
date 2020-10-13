@@ -76,12 +76,22 @@ class _EditTaskScreenState
                           bloc?.updateTask(
                             item: TaskEntity(
                               id: task.id,
-                              task: _taskNameController?.text?.trim(),
-                              detail: _detailController?.text?.trim(),
+                              task: (_taskNameController?.text
+                                          ?.trim()
+                                          ?.isNotEmpty ==
+                                      true)
+                                  ? _taskNameController?.text?.trim()
+                                  : task?.task,
+                              detail: (_detailController?.text
+                                          ?.trim()
+                                          ?.isNotEmpty ==
+                                      true)
+                                  ? _detailController?.text?.trim()
+                                  : task?.detail,
                               date: (selectedDate != null)
-                                  ? DateFormat.yMMMMd('en_US')
+                                  ? DateFormat('dd-MM-yyyy')
                                       .format(selectedDate)
-                                  : null,
+                                  : task?.date,
                               done: done,
                               listName: bloc?.state?.listTaskToMove,
                             ),

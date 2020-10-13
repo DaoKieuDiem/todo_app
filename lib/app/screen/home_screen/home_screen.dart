@@ -385,12 +385,13 @@ class _HomeScreenState
                 InkWell(
                   onTap: () {
                     if (listName != defaultList) {
+                      Navigator.pop(context);
                       if (completedTasks?.isEmpty == true &&
                           uncompletedTasks?.isEmpty == true) {
                         bloc?.taskBloc?.deleteList(listName: listName);
+                      } else {
+                        _showDeleteListAlert();
                       }
-                      Navigator.pop(context);
-                      _showDeleteListAlert();
                     }
                   },
                   child: Container(
@@ -779,10 +780,7 @@ class _HomeScreenState
               FlatButton(
                 onPressed: () {
                   bloc?.taskBloc?.deleteList(listName: listName);
-                  Future.delayed(const Duration(milliseconds: 2000))
-                      .whenComplete(
-                    () => Navigator.pop(context),
-                  );
+                  Navigator.pop(context);
                 },
                 child: Text(
                   AlertContentString.delete,
