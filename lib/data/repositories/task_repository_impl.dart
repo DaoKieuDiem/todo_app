@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:todo_app/common/common_constant.dart';
 import 'package:todo_app/data/models/task_model.dart';
+import 'package:todo_app/data/repositories/calendar_client.dart';
 import 'package:todo_app/data/repositories/task_repository_i.dart';
 
 class TaskRepository implements ITaskRepository {
   final box = Hive.box(HiveBoxName.tasks);
+  CalendarClient _calendarClient = CalendarClient();
   TaskRepository();
   @override
   Future<List<TaskModel>> getAllTask(String listName) async {
@@ -49,8 +51,9 @@ class TaskRepository implements ITaskRepository {
   }
 
   @override
-  Future<void> addTask(TaskModel task) async {
+  Future<bool> addTask(TaskModel task) async {
     await box.put(task.id, task);
+    return _calendarClient.insert(task.task, task.date, task.date);
   }
 
   @override

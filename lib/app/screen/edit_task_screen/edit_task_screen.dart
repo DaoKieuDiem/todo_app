@@ -96,7 +96,7 @@ class _EditTaskScreenState
                                     ? _detailController?.text?.trim()
                                     : task?.detail,
                             date: (selectedDate != null)
-                                ? DateFormat('dd-MM-yyyy').format(selectedDate)
+                                ? selectedDate
                                 : task?.date,
                             done: done,
                             listName: bloc?.state?.listTaskToMove,
@@ -301,7 +301,8 @@ class _EditTaskScreenState
                                     (selectedDate != null)
                                         ? DateFormat.yMMMMd('en_US')
                                             .format(selectedDate)
-                                        : task?.date,
+                                        : DateFormat.yMMMMd('en_US')
+                                            .format(task?.date),
                                     style: TextStyle(
                                       color: (done == true)
                                           ? Colors.black.withOpacity(0.5)

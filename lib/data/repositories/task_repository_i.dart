@@ -7,7 +7,7 @@ abstract class ITaskRepository {
   Future<List<TaskModel>> getCompletedTask({String listName});
   Future<List<TaskModel>> getUncompletedTask({String listName});
   Future<bool> updateTask(TaskModel task);
-  Future<void> addTask(TaskModel task);
+  Future<bool> addTask(TaskModel task);
   Future<bool> deleteTask(TaskModel task);
   Future<bool> deleteAllTask({bool done});
 }

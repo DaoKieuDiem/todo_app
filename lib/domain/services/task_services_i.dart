@@ -7,7 +7,7 @@ abstract class ITaskServices {
   Future<List<TaskEntity>> getUncompletedTask({String listName});
   Future<List<String>> getListTasksName();
   Future<bool> updateTask(TaskEntity task);
-  Future<void> addTask(TaskEntity task);
+  Future<bool> addTask(TaskEntity task);
   Future<bool> deleteTask(TaskEntity task);
   Future<bool> deleteAllTask({bool done});
 }

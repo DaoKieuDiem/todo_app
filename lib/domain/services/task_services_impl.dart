@@ -37,8 +37,9 @@ class TaskServices implements ITaskServices {
   }
 
   @override
-  Future<void> addTask(TaskEntity task) async {
-    await taskRepository.addTask(TaskModel.fromEntity(task));
+  Future<bool> addTask(TaskEntity task) async {
+    final _success = await taskRepository.addTask(TaskModel.fromEntity(task));
+    return _success;
   }
 
   @override

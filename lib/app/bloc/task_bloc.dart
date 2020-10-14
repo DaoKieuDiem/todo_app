@@ -48,6 +48,7 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
   }
 
   Stream<TaskState> _addNewTask(AddNewTaskEvent event) async* {
+    var message = '';
     final allTasks = await taskServices.getAllTask(event.item.listName);
     if (allTasks.isEmpty == true) {
       event.item.id = '0';
@@ -55,14 +56,23 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
       event.item.id = '${int.parse(allTasks.last.id.trim()) + 1}';
     }
     event.item.done = false;
-    await taskServices.addTask(event.item);
+    yield TaskState(
+        state: state,
+        changeCheckMessage:
+            'You need to sign in google account to add event to your calendar');
+    await Future.delayed(const Duration(milliseconds: 2000));
+    final success = await taskServices.addTask(event.item);
     final items = await taskServices.getUncompletedTask(
       listName: event.item.listName,
     );
+    if (success == true) {
+      message = '1 task has been add';
+    }
     yield TaskState(
       state: state,
       uncompletedTasks: items,
       isFetchedData: false,
+      changeCheckMessage: message,
     );
   }
 
