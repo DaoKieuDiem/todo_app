@@ -17,7 +17,6 @@ Future<void> main() async {
   await DatabaseUtils.initDatabase();
   Hive.registerAdapter(TaskModelAdapter());
   await Hive.openBox(HiveBoxName.tasks);
-  await Hive.openBox(HiveBoxName.taskList);
   runApp(MyApp());
   //await DatabaseUtils.clearDatabase();
 }

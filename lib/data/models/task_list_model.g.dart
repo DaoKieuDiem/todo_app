@@ -19,17 +19,20 @@ class TaskListModelAdapter extends TypeAdapter<TaskListModel> {
     return TaskListModel(
       listName: fields[0] as String,
       isActive: fields[1] as bool,
+      userName: fields[2] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, TaskListModel obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.listName)
       ..writeByte(1)
-      ..write(obj.isActive);
+      ..write(obj.isActive)
+      ..writeByte(2)
+      ..write(obj.userName);
   }
 
   @override

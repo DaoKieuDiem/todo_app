@@ -14,7 +14,7 @@ class TaskModel extends HiveObject {
   String detail;
 
   @HiveField(3)
-  String date;
+  DateTime date;
 
   @HiveField(4)
   String time;

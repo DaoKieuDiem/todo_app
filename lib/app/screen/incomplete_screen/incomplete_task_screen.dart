@@ -172,7 +172,7 @@ class _UncompletedTaskScreenState
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                        if (item?.date != null && item?.date != '')
+                        if (item?.date != null)
                           BlocBuilder(
                             cubit: BlocProvider.of<HomeScreenBloc>(context),
                             builder: (context, HomeScreenState state) {
@@ -190,7 +190,8 @@ class _UncompletedTaskScreenState
                                   padding: const EdgeInsets.fromLTRB(
                                       10.0, 5.0, 10.0, 5.0),
                                   child: Text(
-                                    item?.date,
+                                    DateFormat.yMMMMd('en_US')
+                                        .format(item?.date),
                                     style:
                                         themeData.textTheme.bodyText2.copyWith(
                                       color: Colors.black.withOpacity(0.5),
@@ -221,7 +222,7 @@ class _UncompletedTaskScreenState
       lastDate: DateTime(2025),
     );
     if (picked != null) {
-      item.date = DateFormat.yMMMMd('en_US').format(picked);
+      item.date = picked;
       bloc?.updateTask(item: item);
     }
   }

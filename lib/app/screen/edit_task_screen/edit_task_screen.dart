@@ -276,9 +276,7 @@ class _EditTaskScreenState
                   child: BlocBuilder(
                     cubit: homeBloc,
                     builder: (context, HomeScreenState state) {
-                      return ((task?.date == null ||
-                                  task?.date?.isEmpty == true) &&
-                              selectedDate == null)
+                      return ((task?.date == null) && selectedDate == null)
                           ? Container(
                               child: Text(
                                 'Add date',

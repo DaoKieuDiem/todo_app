@@ -18,7 +18,7 @@ class AlertContentString {
 }
 
 class HiveBoxName {
-  static const String tasks = 'tasks';
+  static const String tasks = 'alltasks';
   static const String taskList = 'tasklist';
 }
 

@@ -4,7 +4,7 @@ class TaskEntity {
   String id;
   String task;
   String detail;
-  String date;
+  DateTime date;
   String time;
   bool done;
   String listName;

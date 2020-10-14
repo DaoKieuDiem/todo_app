@@ -441,8 +441,10 @@ class _HomeScreenState
                 ),
                 InkWell(
                   onTap: () {
-                    Navigator.pop(context);
-                    _showDeleteCompleteAlert();
+                    if (completedTasks?.isNotEmpty == true) {
+                      Navigator.pop(context);
+                      _showDeleteCompleteAlert();
+                    }
                   },
                   child: Container(
                     width: MediaQuery.of(context).size.width,
@@ -637,8 +639,7 @@ class _HomeScreenState
                                   task: _taskTitleController?.text?.trim(),
                                   detail: _taskDetailController?.text?.trim(),
                                   date: (selectedDate != null)
-                                      ? DateFormat('dd-MM-yyyy')
-                                          .format(selectedDate)
+                                      ? selectedDate
                                       : null,
                                   listName: listName,
                                 ),

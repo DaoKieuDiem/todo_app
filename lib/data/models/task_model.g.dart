@@ -20,10 +20,11 @@ class TaskModelAdapter extends TypeAdapter<TaskModel> {
       id: fields[0] as String,
       task: fields[1] as String,
       detail: fields[2] as String,
-      date: fields[3] as String,
+      date: fields[3] as DateTime,
       time: fields[4] as String,
       done: fields[5] as bool,
-    )..listName = fields[6] as String;
+      listName: fields[6] as String,
+    );
   }
 
   @override
