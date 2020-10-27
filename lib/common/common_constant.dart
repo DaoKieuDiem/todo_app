@@ -29,3 +29,14 @@ class ImageAssetUrl {
 }
 
 const String defaultList = 'Default';
+enum TypeRepeat { day, week, month, year }
+enum DayRepeat {
+  sunday,
+  monday,
+  tuesday,
+  wednesday,
+  thursday,
+  friday,
+  saturday
+}
+enum OrdinalNumbers { first, second, third, fourth, last }

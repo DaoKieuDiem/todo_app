@@ -23,7 +23,10 @@ class TaskModel extends HiveObject {
   bool done;
   @HiveField(6)
   String listName;
-
+  @HiveField(7)
+  DateTime endDate;
+  @HiveField(8)
+  String repeat;
   TaskModel({
     this.id,
     this.task,
@@ -32,16 +35,20 @@ class TaskModel extends HiveObject {
     this.time,
     this.done,
     this.listName,
+    this.endDate,
+    this.repeat,
   });
   factory TaskModel.fromEntity(TaskEntity entity) {
     return TaskModel(
       id: entity.id,
       task: entity.task,
       detail: entity.detail,
-      date: entity.date,
+      date: entity.startDate,
       time: entity.time,
       done: entity.done,
       listName: entity.listName,
+      endDate: entity.endDate,
+      repeat: entity.repeat,
     );
   }
 }

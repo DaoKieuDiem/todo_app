@@ -56,11 +56,8 @@ class TaskBloc extends BaseBloc<BaseEvent, TaskState> {
       event.item.id = '${int.parse(allTasks.last.id.trim()) + 1}';
     }
     event.item.done = false;
-    yield TaskState(
-        state: state,
-        changeCheckMessage:
-            'You need to sign in google account to add event to your calendar');
-    await Future.delayed(const Duration(milliseconds: 2000));
+    // yield TaskState(state: state, changeCheckMessage: '1 task has been added');
+    //await Future.delayed(const Duration(milliseconds: 2000));
     final success = await taskServices.addTask(event.item);
     final items = await taskServices.getUncompletedTask(
       listName: event.item.listName,
