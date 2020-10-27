@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
@@ -10,6 +12,7 @@ import 'package:todo_app/app/bloc/task_bloc.dart';
 import 'package:todo_app/app/screen/edit_task_screen/edit_task_screen.dart';
 import 'package:todo_app/common/color_constant.dart';
 import 'package:todo_app/common/common_constant.dart';
+import 'package:todo_app/common/utils/app_utils.dart';
 import 'package:todo_app/domain/entities/task_entity.dart';
 
 class AllTaskScreen extends StatefulWidget {
@@ -38,8 +41,7 @@ class _AllTaskScreenState
   TaskBloc get bloc => homeBloc?.taskBloc;
   DateTime _selectedStartDate;
   DateTime _selectedEndDate;
-
-  String get startEndDate {}
+  DateTime time = DateTime.now();
 
   @override
   bool get isContentLayout => true;
@@ -313,6 +315,7 @@ class _AllTaskScreenState
   Future<void> _selectDate(BuildContext context, {TaskEntity item}) async {
     final now = DateTime.now();
     await showModalBottomSheet(
+        isScrollControlled: true,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(20.0),
@@ -348,17 +351,25 @@ class _AllTaskScreenState
                     ),
                   ),
                   Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 20.0),
-                      padding:
-                          const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        color: themeData.dividerColor,
-                      ),
-                      child: Text(
-                        'Set Time',
-                        style: themeData.textTheme.bodyText1,
+                    child: InkWell(
+                      onTap: () {
+                        _showSetTimeBottomSheet(context);
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 20.0),
+                        padding:
+                            const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8.0),
+                          color: kLightWhiteGrey,
+                        ),
+                        child: Text(
+                          (selectedStartDate != null)
+                              ? DateFormat.Hm().format(selectedStartDate)
+                              : 'Set Time',
+                          style: themeData.textTheme.bodyText1
+                              .copyWith(fontWeight: FontWeight.normal),
+                        ),
                       ),
                     ),
                   )
@@ -380,6 +391,7 @@ class _AllTaskScreenState
                     ),
                     InkWell(
                       onTap: () {
+                        Navigator.pop(context);
                         _showRepeatBottomSheet(context);
                       },
                       child: Text(
@@ -393,6 +405,7 @@ class _AllTaskScreenState
                 ),
               ),
               Container(
+                margin: const EdgeInsets.only(bottom: 20.0),
                 padding: const EdgeInsets.symmetric(horizontal: 10.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -405,20 +418,37 @@ class _AllTaskScreenState
                       },
                       child: Text(
                         'Cancel',
-                        style: themeData.textTheme.bodyText1,
+                        style: themeData.textTheme.button,
                       ),
                     ),
                     TextButton(
                       onPressed: () {
                         item
-                          ..startDate = _selectedStartDate
+                          ..startDate = DateTime(
+                            _selectedStartDate?.year,
+                            _selectedStartDate?.month,
+                            _selectedStartDate?.day,
+                            selectedStartDate?.hour ?? 00,
+                            selectedStartDate?.minute ?? 00,
+                          )
                           ..endDate = _selectedEndDate;
                         bloc?.updateTask(item: item);
+                        /*final _result = DateTime(
+                          _selectedStartDate?.year,
+                          _selectedStartDate?.month,
+                          _selectedStartDate?.day,
+                          selectedStartDate?.hour ?? 00,
+                          selectedStartDate?.minute ?? 00,
+                        );
+                        bloc?.pickDate(
+                          selectedEndDate: _selectedEndDate,
+                          selectedStartDate: _result,
+                        );*/
                         Navigator.pop(context);
                       },
                       child: Text(
                         'Done',
-                        style: themeData.textTheme.bodyText1.copyWith(
+                        style: themeData.textTheme.button.copyWith(
                           color: themeData.primaryColor,
                         ),
                       ),
@@ -432,15 +462,25 @@ class _AllTaskScreenState
   }
 
   void _onSelectionChange(DateRangePickerSelectionChangedArgs args) {
-    _selectedStartDate = args.value.startDate;
-    if (args.value.endDate != null) {
+    if (args.value is PickerDateRange) {
+      _selectedStartDate = args.value.startDate;
       _selectedEndDate = args.value.endDate;
-    } else {
-      _selectedEndDate = args.value.startDate;
+    } else if (args.value is DateTime) {
+      _selectedStartDate = args.value;
+      _selectedEndDate = null;
     }
+    var _result = DateTime(
+      _selectedStartDate?.year,
+      _selectedStartDate?.month,
+      _selectedStartDate?.day,
+      selectedStartDate?.hour ?? 00,
+      selectedStartDate?.minute ?? 00,
+    );
+    homeBloc?.pickDate(
+      selectedStartDate: _result,
+      selectedEndDate: _selectedEndDate,
+    );
   }
-
-  final _days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
   void _showRepeatBottomSheet(BuildContext context) {
     showModalBottomSheet(
@@ -486,33 +526,58 @@ class _AllTaskScreenState
                           border: InputBorder.none,
                         ),
                         keyboardType: TextInputType.number,
+                        inputFormatters: [LengthLimitingTextInputFormatter(2)],
                       ),
                     ),
                     Container(
                       margin: const EdgeInsets.only(left: 10.0),
+                      padding: const EdgeInsets.only(left: 8.0),
                       decoration: BoxDecoration(
                         color: kLightWhiteGrey,
                         borderRadius: BorderRadius.circular(3.0),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton(
-                          onChanged: (value) {},
-                          items: const [
+                          value: homeBloc?.state?.typeRepeat,
+                          onChanged: (value) {
+                            homeBloc?.chooseTypeRepeat(typeRepeat: value);
+                          },
+                          items: [
                             DropdownMenuItem(
-                              value: 1,
-                              child: Text('Day'),
+                              value: TypeRepeat.day,
+                              child: Text(
+                                AppUtils.parserTypeRepeat(
+                                  TypeRepeat.day,
+                                  int.parse(_timeRepeatController.text.trim()),
+                                ),
+                              ),
                             ),
                             DropdownMenuItem(
-                              value: 2,
-                              child: Text('Week'),
+                              value: TypeRepeat.week,
+                              child: Text(
+                                AppUtils.parserTypeRepeat(
+                                  TypeRepeat.week,
+                                  int.parse(_timeRepeatController.text.trim()),
+                                ),
+                              ),
                             ),
                             DropdownMenuItem(
-                              value: 3,
-                              child: Text('Month'),
+                              value: TypeRepeat.month,
+                              child: Text(
+                                AppUtils.parserTypeRepeat(
+                                  TypeRepeat.month,
+                                  int.parse(_timeRepeatController.text.trim()),
+                                ),
+                              ),
                             ),
                             DropdownMenuItem(
-                              value: 4,
-                              child: Text('Year'),
+                              value: TypeRepeat.year,
+                              child: Text(
+                                AppUtils.parserTypeRepeat(
+                                  TypeRepeat.year,
+                                  int.parse(_timeRepeatController.text.trim()),
+                                ),
+                              ),
                             )
                           ],
                         ),
@@ -527,7 +592,7 @@ class _AllTaskScreenState
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    ..._days.map(_buildDateItem).toList(),
+                    ...DayRepeat.values.map(_buildDateItem).toList(),
                   ],
                 ),
               ),
@@ -551,13 +616,18 @@ class _AllTaskScreenState
                           color: kLightWhiteGrey,
                         ),
                         child: TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            _showStartDatePicker(context);
+                          },
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              '${DateFormat.yMMMMd('en_us').format(
-                                DateTime.now(),
-                              )}',
+                              (selectedStartDate != null)
+                                  ? DateFormat.yMMMMd('en_us')
+                                      .format(selectedStartDate)
+                                  : '${DateFormat.yMMMMd('en_us').format(
+                                      DateTime.now(),
+                                    )}',
                               style: themeData.textTheme.button.copyWith(
                                 fontWeight: FontWeight.normal,
                               ),
@@ -594,17 +664,119 @@ class _AllTaskScreenState
                   color: kLightWhiteGrey,
                 ),
                 child: TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    _showSetTimeBottomSheet(context);
+                  },
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Set Time',
+                      (selectedStartDate != null)
+                          ? DateFormat.Hm().format(selectedStartDate)
+                          : 'Set Time',
                       style: themeData.textTheme.button.copyWith(
                         color: Colors.black.withOpacity(0.5),
                       ),
                     ),
                   ),
                 ),
+              ),
+              Container(
+                margin: const EdgeInsets.only(bottom: 20.0),
+                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        bloc?.reset();
+                        //Navigator.of(context, rootNavigator: false).pop();
+                      },
+                      child: Text(
+                        'Cancel',
+                        style: themeData.textTheme.button,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        homeBloc?.acceptRepeat(
+                          timeRepeat: int.parse(
+                            _timeRepeatController.text.trim(),
+                          ),
+                        );
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        'Done',
+                        style: themeData.textTheme.button.copyWith(
+                          color: themeData.primaryColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        });
+  }
+
+  Widget _buildDateItem(DayRepeat content) {
+    var _isSelected = homeBloc?.state?.dayRepeat == content;
+    return Container(
+      height: 50.0,
+      width: 50.0,
+      child: InkWell(
+        onTap: () {
+          homeBloc?.chooseDayRepeat(dayRepeat: content);
+        },
+        child: Card(
+          elevation: 1.0,
+          color:
+              (_isSelected == true) ? themeData.primaryColor : kLightWhiteGrey,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+          //clipBehavior: Clip.antiAlias,
+          child: Center(
+            child: Text(
+              AppUtils.standForDayRepeat(content),
+              style: themeData.textTheme.subtitle2.copyWith(
+                color: (_isSelected == true) ? Colors.white : Colors.black,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showStartDatePicker(BuildContext context) {
+    showModalBottomSheet(
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20.0),
+            topRight: Radius.circular(20.0),
+          ),
+        ),
+        context: context,
+        builder: (BuildContext context) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SfDateRangePicker(
+                showNavigationArrow: true,
+                headerStyle: DateRangePickerHeaderStyle(
+                  textAlign: TextAlign.center,
+                  textStyle: themeData.textTheme.bodyText1,
+                ),
+                headerHeight: 80.0,
+                initialSelectedDate: (_selectedStartDate != null)
+                    ? _selectedStartDate
+                    : DateTime.now(),
+                selectionMode: DateRangePickerSelectionMode.single,
+                onSelectionChanged: _onSelectionChange,
               ),
               Container(
                 margin: const EdgeInsets.only(bottom: 20.0),
@@ -625,10 +797,16 @@ class _AllTaskScreenState
                     ),
                     TextButton(
                       onPressed: () {
-                        // bloc?.pickDate(
-                        //   selectedEndDate: _selectedEndDate,
-                        //   selectedStartDate: _selectedStartDate,
-                        // );
+                        final _result = DateTime(
+                          _selectedStartDate?.year ?? selectedStartDate?.year,
+                          _selectedStartDate?.month ?? selectedStartDate?.month,
+                          _selectedStartDate?.day ?? selectedStartDate?.day,
+                          selectedStartDate?.hour,
+                          selectedStartDate.minute,
+                        );
+                        homeBloc?.pickDate(
+                          selectedStartDate: _result,
+                        );
                         Navigator.pop(context);
                       },
                       child: Text(
@@ -646,23 +824,74 @@ class _AllTaskScreenState
         });
   }
 
-  Widget _buildDateItem(String content) {
-    return Container(
-      height: 50.0,
-      width: 50.0,
-      child: Card(
-        elevation: 1.0,
-        color: kLightWhiteGrey,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
-        //clipBehavior: Clip.antiAlias,
-        child: Center(
-          child: Text(
-            content,
-            style: themeData.textTheme.subtitle2,
-          ),
+  void _showSetTimeBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20.0),
+          topRight: Radius.circular(20.0),
         ),
       ),
+      isScrollControlled: true,
+      context: context,
+      builder: (BuildContext context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              height: MediaQuery.of(context).copyWith().size.height / 4,
+              margin: const EdgeInsets.only(top: 20.0),
+              child: CupertinoDatePicker(
+                mode: CupertinoDatePickerMode.time,
+                initialDateTime: time,
+                onDateTimeChanged: (DateTime value) {
+                  time = value;
+                },
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.only(bottom: 20.0),
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      'Cancel',
+                      style: themeData.textTheme.button,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      final _result = DateTime(
+                        selectedStartDate?.year ?? time?.year,
+                        selectedStartDate?.month ?? time?.month,
+                        selectedStartDate?.day ?? time?.day,
+                        time?.hour ?? 00,
+                        time?.minute ?? 00,
+                      );
+                      homeBloc?.pickDate(
+                        selectedStartDate: _result,
+                      );
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      'Done',
+                      style: themeData.textTheme.button.copyWith(
+                        color: themeData.primaryColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
